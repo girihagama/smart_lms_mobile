@@ -1,6 +1,11 @@
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:smart_lms/controller/apiclient.dart';
+import 'package:smart_lms/model/common.dart';
 import 'package:smart_lms/view/home.dart';
 import 'package:smart_lms/view/signup.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   @override
@@ -8,28 +13,76 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
+  final _emailameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   String _errorMessage = '';
 
-  void _login() {
-    //Validate User
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getBaseUrl();
+  }
 
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _errorMessage = '';
-      });
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return SignupPage();
-      }));
-      print('Username: ${_usernameController.text}');
-      print('Password: ${_passwordController.text}');
-    } else {
-      setState(() {
-        _errorMessage = 'Please enter both username and password';
-      });
+  void _login({required String email, required String password}) async {
+    final bodyParam = {
+      "email": "mathusanmathu24@gmail.com",
+      "password": "abcd"
+    };
+
+    EasyLoading.showProgress(0,status: 'Please wait..');
+
+    final response = await ApiClient.call('token', ApiMethod.POST,
+        authorized: false, data: bodyParam);
+        EasyLoading.dismiss();
+
+        if(response?.data !=null && response?.statusCode ==200 ){
+
+          ApiClient.bearerToken = response?.data['token'];
+          await EasyLoading.showSuccess('Login Successfully');
+          Navigator.push(context, MaterialPageRoute(builder: (context){
+            return HomePage();
+          }));
+
+        }else{
+          EasyLoading.showError('Something went wrong try again later');
+        }
+
+    // await http.post(Uri.parse('${Common.baseUrl}/token'),
+    // body: bodyParam
+    // );
+    print(response);
+  }
+
+
+  Future<String>resetPassword({required String email}) async {
+
+    final response = await ApiClient.call('forget/$email', ApiMethod.POST,
+    
+    authorized: false
+    );
+    if(response?.data !=null  && response?.statusCode ==200){
+        return response?.data['message'];
+
+    }else {
+      return 'Something went wrong try again later';
+    }
+
+
+
+
+  }
+
+  getBaseUrl() async {
+    try {
+      final FirebaseRemoteConfig _remoteConfig =
+          await FirebaseRemoteConfig.instance;
+      final baseUrl = await _remoteConfig.getValue('REMOTE_CONFIG');
+      print(baseUrl);
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -74,7 +127,8 @@ class _LoginPageState extends State<LoginPage> {
                 flex: 1,
               ),
               TextFormField(
-                controller: _usernameController,
+                style: TextStyle(color: Colors.white),
+                controller: _emailameController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
                   border: OutlineInputBorder(),
@@ -88,6 +142,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
               TextFormField(
+                style: TextStyle(color: Colors.white),
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -110,22 +165,41 @@ class _LoginPageState extends State<LoginPage> {
                   // SizedBox(
                   //   width: 30,
                   // ),
-                  Text(
-                    'FORGOT PASSWORD',
-                    style: TextStyle(color: Colors.white),
+                  GestureDetector(
+                    onTap: ()async {
+
+                        if(_emailameController.text.isNotEmpty){
+                          final res =await resetPassword(email: _emailameController.text.trim());
+                          await  EasyLoading.showSuccess('Password Reset Plz Activate the account',duration:const Duration(seconds: 5));
+                          Navigator.push(context, MaterialPageRoute(builder: (context){
+                            return SignupPage();
+                          }));
+
+                        }else{
+                          EasyLoading.showError('Enter Your Email!');
+                        }
+
+                    },
+                    child: Text(
+                      'FORGOT PASSWORD',
+                      style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          color: Colors.red),
+                    ),
                   ),
                   SizedBox(
                     width: 30,
                   ),
 
                   GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context){
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
                         return SignupPage();
                       }));
                     },
                     child: Text(
-                      'SIGNUP',
+                      'ACTIVATE ACCOUNT',
                       style: TextStyle(
                           color: Colors.blue,
                           decoration: TextDecoration.underline,
@@ -142,7 +216,9 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
-                  _login();
+                  _login(
+                      email: _emailameController.text.trim(),
+                      password: _passwordController.text.trim());
                   // Navigator.push(context, MaterialPageRoute(builder: (context){
                   //   return HomePage();
                   // }));

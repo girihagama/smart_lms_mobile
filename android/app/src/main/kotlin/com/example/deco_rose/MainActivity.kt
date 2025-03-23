@@ -1,4 +1,4 @@
-package com.example.smart_lms
+package com.smartlms.api
 
 import io.flutter.embedding.android.FlutterActivity
 

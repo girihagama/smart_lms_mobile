@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:smart_lms/controller/apiclient.dart';
+import 'package:smart_lms/view/home.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -7,10 +11,12 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _otpController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
-  
+
   String _errorMessage = '';
 
   void _signup() {
@@ -18,13 +24,39 @@ class _SignupPageState extends State<SignupPage> {
       setState(() {
         _errorMessage = '';
       });
-  
-      print('Username: ${_usernameController.text}');
+
+      print('Username: ${_emailController.text}');
       print('Password: ${_passwordController.text}');
     } else {
       setState(() {
         _errorMessage = 'Please enter both username and password';
       });
+    }
+  }
+
+  Future<bool> activateAccount(
+    { required String password,required String email, required String otp}) async {
+    final bodyParam = {"password": password};
+    try {
+      final response = await ApiClient.call('verify/$email/$otp', ApiMethod.POST,
+      data: bodyParam
+      );
+      
+  
+
+      if (response?.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response?.data);
+
+        if (responseData["action"] == true) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
     }
   }
 
@@ -43,39 +75,36 @@ class _SignupPageState extends State<SignupPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-                     Row(
+              Spacer(),
+              Row(
                 children: [
                   Text(
-                    'Login',
+                    'Activate Account',
                     style: TextStyle(color: Colors.white, fontSize: 24),
                   ),
                   SizedBox(
                     width: 10,
                   ),
-                  Text(
-                    'Smart Library',
-                    style: TextStyle(color: Colors.green, fontSize: 24),
-                  )
                 ],
               ),
-
               TextFormField(
                 style: TextStyle(color: Colors.white),
-                controller: _usernameController,
+                controller: _emailController,
                 decoration: const InputDecoration(
                   labelStyle: TextStyle(color: Colors.white54),
-                  labelText: 'Username',
+                  labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a username';
+                    return 'Please enter a email';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
               TextFormField(
+                style: TextStyle(color: Colors.white),
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -89,12 +118,14 @@ class _SignupPageState extends State<SignupPage> {
                   return null;
                 },
               ),
-            const   SizedBox(height: 20),
-               TextFormField(
-                controller: _passwordController,
+              const SizedBox(height: 20),
+              TextFormField(
+                style: TextStyle(color: Colors.white),
+                maxLength: 6,
+                controller: _otpController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Re-enter Password',
+                  labelText: 'Enter the otp',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -107,16 +138,43 @@ class _SignupPageState extends State<SignupPage> {
               if (_errorMessage.isNotEmpty)
                 Text(
                   _errorMessage,
-                  style:const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red),
                 ),
-            const  SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _signup,
-                style: ElevatedButton.styleFrom(
-                  minimumSize:const  Size(double.infinity, 40),
+              const SizedBox(height: 20),
+                         GestureDetector(
+                onTap: () async{
+                   final res =  await  activateAccount(
+                    email: _emailController.text.trim(),
+                    password: _passwordController.text.trim(),
+                    otp: _otpController.text.trim()
+                  );
+                  if(res== true){
+                   await EasyLoading.showSuccess('User Activated');  
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return HomePage();
+                    }));                 
+                  }else{
+
+                    EasyLoading.showError('Something went wrong');
+                  }
+                },
+                child: Container(
+                  height: 50,
+                  width: 300,
+                  child: Center(
+                      child: Text(
+                    'ACTIVATE',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  )),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      gradient: LinearGradient(colors: [
+                        Colors.blue,
+                        Colors.green,
+                      ])),
                 ),
-                child: const Text('Signup'),
               ),
+    
               Spacer()
             ],
           ),
