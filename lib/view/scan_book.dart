@@ -14,9 +14,9 @@ class _BookScanScreenState extends State<BookScanScreen> {
 
 BookResult? bookResult;
 
-Future<void> getBookDetails() async {
+Future<void> getBookDetails({required String bookId}) async {
 final data = {
-"book_id":"1743116187176"
+"book_id":bookId
 
 };
 final res = await ApiClient.call('book/check', ApiMethod.POST,
