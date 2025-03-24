@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1049211853864",
+    "project_id": "smart-lms-8ae35",
+    "storage_bucket": "smart-lms-8ae35.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1049211853864:android:1916297adb0646abed291d",
+        "android_client_info": {
+          "package_name": "com.smartlms.api"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAz6wIXK10d_5dcbiGEryftOoiWgq9Pms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
