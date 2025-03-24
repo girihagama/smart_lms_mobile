@@ -1,12 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:smart_lms/controller/apiclient.dart';
+import 'package:smart_lms/model/borrowed_book.dart';
+import 'package:smart_lms/model/user.dart';
 
 
 
-class BookCard extends StatelessWidget {
+class BorrowedBooksWidget extends StatefulWidget {
+  const BorrowedBooksWidget({super.key});
+
+  @override
+  State<BorrowedBooksWidget> createState() => _BorrowedBooksWidgetState();
+}
+
+class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
+  BorrowedBookResult? borrowedBookResult;
+
+  Future<void> getBorrowedBookResult() async {
+    final res = await ApiClient.call('transaction/borrowed', ApiMethod.POST);
+
+    if (res?.data != null && res?.statusCode == 200) {
+      setState(() {
+        borrowedBookResult = BorrowedBookResult.fromJson(res?.data);
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getBorrowedBookResult();
+  }
+
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: const Text('Borrowed Books', style: TextStyle(color: Colors.white)),
+      ),
+      body: borrowedBookResult == null
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: borrowedBookResult!.borrowedBooks?.length,
+              itemBuilder: (context, index) {
+                final book = borrowedBookResult!.borrowedBooks?[index];
+                return _buildBookCard(book!);
+              },
+            ),
+    );
+  }
+
+  Widget _buildBookCard(BorrowedBook book) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -22,40 +70,29 @@ class BookCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: SvgPicture.asset(
-                  'assets/images/book2.svg',
+                child: Image.network(
+                  'https://backend.24x7retail.com/uploads/book_image-1742146695475-746352339.jpg',
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
                 ),
               ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 8),
+              Row(
                 children: [
-                  const Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                    size: 16,
-                  ),
+                  const Icon(Icons.star, color: Colors.amber, size: 16),
                   const SizedBox(width: 4),
-                  const Text(
-                    '5.0',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Text(
+                    '${book.bookRating?.toStringAsFixed(1)}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              
               const SizedBox(height: 4),
-              const Text(
-                'READERS\n1875',
+              Text(
+                'READERS\n${book.bookReaders}',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),
@@ -68,27 +105,27 @@ class BookCard extends StatelessWidget {
               children: [
                 // Title and Return Date
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     children: [
                       TextSpan(
-                        text: 'BOOK 1 - ',
-                        style: TextStyle(
+                        text: '${book.bookName} - ',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
                       TextSpan(
-                        text: '5 Days Left To Return\n',
-                        style: TextStyle(
+                        text: book.transactionReturn,
+                        style: const TextStyle(
                           color: Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
                       TextSpan(
-                        text: 'BORROWED : 2025/02/20 | RETURN : 2025/03/05',
-                        style: TextStyle(
+                        text: '\nBORROWED: ${book.transactionBorrowDate} | RETURN: ${book.transactionReturnDate}',
+                        style: const TextStyle(
                           color: Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
@@ -100,40 +137,26 @@ class BookCard extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 // Book Description
-                const Text(
-                  'The Let Them Theory: A Life-Changing Tool That Millions of People Can\'t Stop Talking About',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                Text(
+                  book.bookDescription.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
                 const SizedBox(height: 8),
 
                 // Book Metadata
-                const Text(
-                  '• Publisher: Hay House LLC (December 24, 2024)\n'
-                  '• Language: English\n'
-                  '• Hardcover: 336 pages\n'
-                  '• ISBN-10: 1401971369\n'
-                  '• ISBN-13: 978 1401971366',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
+                Text(
+                  '• Condition: ${book.bookCondition}\n• Late Fee: ${book.transactionLateFee}\n• Status: ${book.transactionStatus}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),
           ),
 
-          // Info and Rating
+          // Info Icon
           Column(
             children: [
-              Icon(
-                LucideIcons.info,
-                color: Colors.greenAccent,
-              ),
+              const Icon(Icons.info, color: Colors.greenAccent),
               const SizedBox(height: 8),
-      
             ],
           ),
         ],
@@ -141,10 +164,36 @@ class BookCard extends StatelessWidget {
     );
   }
 }
+
   
 
-class ProfileWidget extends StatelessWidget {
+class ProfileWidget extends StatefulWidget {
   const ProfileWidget({super.key});
+
+  @override
+  State<ProfileWidget> createState() => _ProfileWidgetState();
+}
+
+class _ProfileWidgetState extends State<ProfileWidget> {
+  UserResult? userResult;
+
+  Future<void> getUsers(String email) async {
+    final data = {"email": email};
+
+    final res = await ApiClient.call('user/info', ApiMethod.POST, data: data);
+
+    if (res?.data != null && res?.statusCode == 200 && res?.data['action'] == true) {
+      setState(() {
+        userResult = UserResult.fromJson(res?.data);
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUsers('mathusanmathu24@gmail.com');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,75 +212,78 @@ class ProfileWidget extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.green,
-                child: Text(
-                  'IG',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
+      body: userResult == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.green,
+                      child: Text(
+                        'UM',
+                        style: TextStyle(color: Colors.white, fontSize: 24),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      userResult?.user?.uM_NAME ?? 'N/A',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Member since: ${_formatDate(userResult?.user?.uM_REGISTRATION_DATE)}\nMax Books Can Borrow: ${userResult?.user?.uM_MAX_BOOKS ?? 0}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInfoField('Name:', userResult?.user?.uM_NAME ?? 'N/A'),
+                    _buildInfoField('DOB:', _formatDate(userResult?.user?.uM_DOB)),
+                    _buildInfoField('Address:', userResult?.user?.uM_ADDRESS ?? 'N/A'),
+                    _buildInfoField('Contact:', userResult?.user?.uM_MOBILE ?? 'N/A'),
+                    _buildInfoField('Email:', userResult?.user?.uM_CODE ?? 'N/A'),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[800],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {},
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12.0),
+                        child: Text(
+                          'CONTACT LIBRARY',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.phone, color: Colors.white),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.email, color: Colors.white),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Indunil Girihagama',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Member since : 2020/10/10\nMax Books Can Borrow : 3',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              _buildInfoField('Name:', 'Indunil Girihagama'),
-              _buildInfoField('DOB:', '1984/01/04'),
-              _buildInfoField('Address:', '23/1, Rosmead Pl, Colombo 07.'),
-              _buildInfoField('Contact:', '+9471 240 8745'),
-              _buildInfoField('Email:', 'hmitpg94@gmail.com'),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[800],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {},
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Text(
-                    'CONTACT LIBRARY',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.phone, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.email, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -254,17 +306,24 @@ class ProfileWidget extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(color: Colors.black87),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(color: Colors.black87),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  String _formatDate(DateTime? date) {
+    return date != null ? DateFormat('yyyy/MM/dd').format(date) : 'N/A';
+  }
 }
+
 
 
 

@@ -28,8 +28,8 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login({required String email, required String password}) async {
     final bodyParam = {
-      "email": "mathusanmathu24@gmail.com",
-      "password": "abcd"
+      "email": email,
+      "password": password
     };
 
     EasyLoading.showProgress(0,status: 'Please wait..');
@@ -39,8 +39,10 @@ class _LoginPageState extends State<LoginPage> {
         EasyLoading.dismiss();
 
         if(response?.data !=null && response?.statusCode ==200 ){
+          Map<String, dynamic> resData= response?.data;
 
-          ApiClient.bearerToken = response?.data['token'];
+         ApiClient.bearerToken = resData['token'];
+          print(ApiClient.bearerToken);
           await EasyLoading.showSuccess('Login Successfully');
           Navigator.push(context, MaterialPageRoute(builder: (context){
             return HomePage();
@@ -79,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final FirebaseRemoteConfig _remoteConfig =
           await FirebaseRemoteConfig.instance;
-      final baseUrl = await _remoteConfig.getValue('REMOTE_CONFIG');
+      final baseUrl = await _remoteConfig.getString('REMOTE_CONFIG');
       print(baseUrl);
     } catch (e) {
       print(e);

@@ -14,20 +14,20 @@ int _selectedIndex = 0;
 
   // List of pages for each tab
   static  List<Widget> _widgetOptions = <Widget>[
-    Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context,index){
-          return BookCard();
-            },
+    // Column(
+    //   children: [
+    //     Expanded(
+    //       child: ListView.builder(
+    //         itemCount: 5,
+    //         itemBuilder: (context,index){
+    //       return BookCard();
+    //         },
           
-          ),
-        ),
-      ],
-    ),
-    // BookCard(),
+    //       ),
+    //     ),
+    //   ],
+    // ),
+    BorrowedBooksWidget(),
     // Text('Home Screen', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
     Text('Search Screen', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
     Text('Notifications Screen', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),

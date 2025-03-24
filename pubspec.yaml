@@ -41,6 +41,7 @@ dependencies:
   firebase_remote_config: ^5.4.2
   flutter_easyloading: ^3.0.5
   dio: ^5.8.0+1
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
