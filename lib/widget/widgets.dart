@@ -71,7 +71,7 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  'https://backend.24x7retail.com/uploads/book_image-1742146695475-746352339.jpg',
+                   book.bookImage ??'https://backend.24x7retail.com/uploads/book_image-1742146695475-746352339.jpg',
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
@@ -207,8 +207,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () {
+              
+            },
           ),
         ],
       ),

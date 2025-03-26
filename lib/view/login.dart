@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
       "password": password
     };
 
-    EasyLoading.showProgress(0,status: 'Please wait..');
+    EasyLoading.show(status: 'Please wait');
 
     final response = await ApiClient.call('token', ApiMethod.POST,
         authorized: false, data: bodyParam);
@@ -169,6 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                   // ),
                   GestureDetector(
                     onTap: ()async {
+                      
 
                         if(_emailameController.text.isNotEmpty){
                           final res =await resetPassword(email: _emailameController.text.trim());
@@ -218,12 +219,14 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
+                  if(_formKey.currentState!.validate()){
                   _login(
                       email: _emailameController.text.trim(),
                       password: _passwordController.text.trim());
-                  // Navigator.push(context, MaterialPageRoute(builder: (context){
-                  //   return HomePage();
-                  // }));
+                  }else{
+                        EasyLoading.showError('Please fill in all required fields');
+                  }
+              
                 },
                 child: Container(
                   height: 50,

@@ -1,3 +1,5 @@
+import 'package:smart_lms/view/history_screen.dart';
+import 'package:smart_lms/view/scan_book.dart';
 import 'package:smart_lms/widget/widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -13,28 +15,12 @@ class _HomePageState extends State<HomePage> {
 int _selectedIndex = 0;
 
   // List of pages for each tab
-  static  List<Widget> _widgetOptions = <Widget>[
-    // Column(
-    //   children: [
-    //     Expanded(
-    //       child: ListView.builder(
-    //         itemCount: 5,
-    //         itemBuilder: (context,index){
-    //       return BookCard();
-    //         },
-          
-    //       ),
-    //     ),
-    //   ],
-    // ),
+    List<Widget> _widgetOptions = <Widget>[
     BorrowedBooksWidget(),
-    // Text('Home Screen', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-    Text('Search Screen', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-    Text('Notifications Screen', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-    // Text('Scan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+    HistoryScreen(),
+    BookScanScreen(),
     FinePaymentCard(),
     ProfileWidget()
-    // Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
 
   ];
 
