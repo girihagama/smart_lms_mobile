@@ -42,6 +42,9 @@ dependencies:
   flutter_easyloading: ^3.0.5
   dio: ^5.8.0+1
   intl: ^0.20.2
+  flutter_barcode_scanner: ^2.0.0
+  firebase_messaging: ^15.2.4
+  flutter_local_notifications: ^18.0.0
 
 dev_dependencies:
   flutter_test:

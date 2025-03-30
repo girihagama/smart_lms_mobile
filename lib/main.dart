@@ -1,4 +1,5 @@
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:smart_lms/service/notification_service.dart';
 import 'package:smart_lms/view/home.dart';
 import 'package:smart_lms/view/inventory_view.dart';
 import 'package:smart_lms/view/landing_screen.dart';
@@ -9,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 void main() async{
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
+    await NotificationService().init();
   runApp(const MyApp());
 }
 

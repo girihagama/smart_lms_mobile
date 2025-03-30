@@ -1,7 +1,9 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:smart_lms/controller/apiclient.dart';
 import 'package:smart_lms/model/common.dart';
+import 'package:smart_lms/service/notification_service.dart';
 import 'package:smart_lms/view/home.dart';
 import 'package:smart_lms/view/signup.dart';
 import 'package:flutter/material.dart';
@@ -27,12 +29,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login({required String email, required String password}) async {
+    
+    String? fcmToken = await FirebaseMessaging.instance.getToken();
     final bodyParam = {
       "email": email,
       "password": password
     };
 
-    EasyLoading.showProgress(0,status: 'Please wait..');
+    final bodyParam2 = {
+      "device_id": fcmToken
+
+    };
+
+    EasyLoading.show(status: 'Please wait');
 
     final response = await ApiClient.call('token', ApiMethod.POST,
         authorized: false, data: bodyParam);
@@ -44,6 +53,17 @@ class _LoginPageState extends State<LoginPage> {
          ApiClient.bearerToken = resData['token'];
           print(ApiClient.bearerToken);
           await EasyLoading.showSuccess('Login Successfully');
+
+
+
+          final res = await ApiClient.call('user/device', ApiMethod.POST,
+          data:bodyParam2        
+          );
+          if(res?.statusCode ==200 && res?.data != null){
+              EasyLoading.showSuccess("Device ID Stored");
+          }
+
+
           Navigator.push(context, MaterialPageRoute(builder: (context){
             return HomePage();
           }));
@@ -169,6 +189,7 @@ class _LoginPageState extends State<LoginPage> {
                   // ),
                   GestureDetector(
                     onTap: ()async {
+                      
 
                         if(_emailameController.text.isNotEmpty){
                           final res =await resetPassword(email: _emailameController.text.trim());
@@ -218,12 +239,14 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
+                  if(_formKey.currentState!.validate()){
                   _login(
                       email: _emailameController.text.trim(),
                       password: _passwordController.text.trim());
-                  // Navigator.push(context, MaterialPageRoute(builder: (context){
-                  //   return HomePage();
-                  // }));
+                  }else{
+                        EasyLoading.showError('Please fill in all required fields');
+                  }
+              
                 },
                 child: Container(
                   height: 50,
