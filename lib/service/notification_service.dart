@@ -3,9 +3,19 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 
 class NotificationService {
+
+
+
+
+
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+      
+  String? _fcmToken; // Store token here
+
+  String? get fcmToken => _fcmToken; // Token getter
 
   Future<void> init() async {
     // Request permission for push notifications

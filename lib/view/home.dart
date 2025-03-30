@@ -1,3 +1,4 @@
+import 'package:smart_lms/view/fine_screen.dart';
 import 'package:smart_lms/view/history_screen.dart';
 import 'package:smart_lms/view/scan_book.dart';
 import 'package:smart_lms/widget/widgets.dart';
@@ -19,7 +20,7 @@ int _selectedIndex = 0;
     BorrowedBooksWidget(),
     HistoryScreen(),
     BookScanScreen(),
-    FinePaymentCard(),
+    FineScreen(),
     ProfileWidget()
 
   ];

@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:smart_lms/controller/apiclient.dart';
-import 'package:intl/intl.dart';
 import 'package:smart_lms/model/book_history.dart';
+import 'package:intl/intl.dart';
 
-class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+class FineScreen extends StatefulWidget {
+  const FineScreen({super.key});
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  State<FineScreen> createState() => _FineScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _FineScreenState extends State<FineScreen> {
   BookHistoryResult? bookHistoryResult;
-  int _selectedPage= 1;
-  int _limit =10;
 
-  Future<void> getTransactionHistory() async {
-    final data = {
-      "page": _selectedPage,
-      "limit": _limit,
-    };
+  @override
+  void initState() {
+    super.initState();
+    getFineBookDetails();
+  }
 
-    final res = await ApiClient.call('transaction/history', ApiMethod.POST, data: data);
+  Future<void> getFineBookDetails() async {
+    final res = await ApiClient.call('transaction/fined', ApiMethod.POST);
 
     if (res?.data != null && res?.statusCode == 200) {
       setState(() {
@@ -31,27 +30,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    getTransactionHistory();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Transaction History', style: TextStyle(color: Colors.white)),
-        actions: [
-          IconButton(
-            color: Colors.white,
-            onPressed: ()async{
-
-            await showFormDialog(context);
-
-            }, icon: Icon(Icons.filter_2_sharp))
-        ],
+        title: const Text('Fine Details', style: TextStyle(color: Colors.white)),
       ),
       body: bookHistoryResult == null
           ? const Center(child: CircularProgressIndicator())
@@ -59,60 +43,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
               itemCount: bookHistoryResult!.bookHistories?.length ?? 0,
               itemBuilder: (context, index) {
                 final book = bookHistoryResult!.bookHistories![index];
-                return _buildHistoryCard(book);
+                return Column(
+                  children: [
+                    _buildFineCard(book),
+                    FinePaymentCard(book: book),
+                  ],
+                );
               },
             ),
     );
   }
-  
 
-Future<void> showFormDialog(BuildContext context) async {
-  final _formKey = GlobalKey<FormState>();
-
-  return showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Filter'),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Select Page'),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter Field 1' : null,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Enter the limit'),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter Field 2' : null,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                _formKey.currentState!.save();
-                Navigator.of(context).pop();
-              }
-            },
-            child: Text('Submit'),
-          ),
-        ],
-      );
-    },
-  );
-} 
-
-  Widget _buildHistoryCard(BookHistory book) {
+  Widget _buildFineCard(BookHistory book) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -123,13 +65,12 @@ Future<void> showFormDialog(BuildContext context) async {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Book Image
           Column(
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  book.bookImage  ?? 'https://pngimg.com/d/book_PNG2111.png',
+                  book.bookImage ?? 'https://pngimg.com/d/book_PNG2111.png',
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
@@ -155,8 +96,6 @@ Future<void> showFormDialog(BuildContext context) async {
             ],
           ),
           const SizedBox(width: 16),
-
-          // Book Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,16 +137,9 @@ Future<void> showFormDialog(BuildContext context) async {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '• Condition: ${book.bookCondition}\n• Late Fee: ${book.transactionLateFee}\n• Status: ${book.transactionStatus}',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
               ],
             ),
           ),
-
-          // Info Icon
           const Icon(Icons.info, color: Colors.greenAccent),
         ],
       ),
@@ -217,5 +149,64 @@ Future<void> showFormDialog(BuildContext context) async {
   String _formatDate(DateTime? date) {
     if (date == null) return 'Unknown';
     return DateFormat('yyyy-MM-dd').format(date);
+  }
+}
+
+class FinePaymentCard extends StatelessWidget {
+  final BookHistory book;
+
+  const FinePaymentCard({super.key, required this.book});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // const Divider(color: Colors.white, thickness: 1.0),
+          // const SizedBox(height: 12),
+          _buildInfoRow('Fee Per Day :', 'Rs.${book.bookLateFee}', isBold: true),
+          const SizedBox(height: 8),
+          _buildInfoRow('Days Late To Return :', '${book.transactionLateDays}', isBold: true),
+          const SizedBox(height: 12),
+          _buildInfoRow(
+            'TOTAL PAYMENT TO RETURN :',
+            'Rs.${book.transactionLateFee}',
+            isBold: true,
+            color: Colors.red,
+          ),
+                    const Divider(color: Colors.white, thickness: 1.0),
+
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool isBold = false, Color? color}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: color ?? Colors.white,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
   }
 }

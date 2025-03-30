@@ -56,12 +56,15 @@ class _BookScanScreenState extends State<BookScanScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Book Scanner', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Book Scanner', style: TextStyle(color: Colors.white)),
       ),
       body: bookResult == null
           ? const Center(child: CircularProgressIndicator())
           : bookResult!.books.isEmpty
-              ? const Center(child: Text("No book found", style: TextStyle(color: Colors.white)))
+              ? const Center(
+                  child: Text("No book found",
+                      style: TextStyle(color: Colors.white)))
               : ListView.builder(
                   itemCount: bookResult!.books.length,
                   itemBuilder: (context, index) {
@@ -76,6 +79,14 @@ class _BookScanScreenState extends State<BookScanScreen> {
       ),
     );
   }
+
+Future<void>  requestBook() async{
+// final res = await ApiClient.call('', method)
+}
+
+
+
+
 
   Widget _buildBookCard(Book book) {
     return Container(
@@ -94,7 +105,8 @@ class _BookScanScreenState extends State<BookScanScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  book.bookImage ?? "https://pngimg.com/d/book_PNG2111.png",
+                  // book.bookImage ??
+                  "https://pngimg.com/d/book_PNG2111.png",
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
@@ -107,7 +119,8 @@ class _BookScanScreenState extends State<BookScanScreen> {
                   const SizedBox(width: 4),
                   Text(
                     '${book.bookRating}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -143,6 +156,30 @@ class _BookScanScreenState extends State<BookScanScreen> {
                 Text(
                   '• Condition: ${book.bookCondition}\n• Late Fee: ${book.bookLateFee}\n• Status: ${book.bookStatus}',
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child:GestureDetector(
+                    
+                    onTap: (){
+
+                    },
+                     child:Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [Colors.blue, Colors.green]),
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Colors.white
+                    ),
+                    width: 100,
+                    height: 30,
+                    child: Center(child: Text('Request Book', style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)),
+                  )
+                  )
+                  
+                  //  TextButton(
+                  //   child: Text('Request book'),
+                  //   onPressed: () {},
+                  // ),
                 ),
               ],
             ),

@@ -117,16 +117,16 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
                       ),
                       TextSpan(
                         text: book.transactionReturn,
-                        style: const TextStyle(
-                          color: Color(0xFF80FF80),
+                        style:  TextStyle(
+                          color: _getReturnDateColor(book.transactionReturnDate.toString()) ?? Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
                       TextSpan(
                         text: '\nBORROWED: ${book.transactionBorrowDate} | RETURN: ${book.transactionReturnDate}',
-                        style: const TextStyle(
-                          color: Color(0xFF80FF80),
+                        style:  TextStyle(
+                          color:_getReturnDateColor(book.transactionReturnDate.toString()) ?? Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -165,7 +165,25 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
   }
 }
 
-  
+  Color _getReturnDateColor(String? transactionReturn) {
+  if (transactionReturn == null) return const Color(0xFF80FF80); 
+
+  try {
+    final returnDate = DateTime.parse(transactionReturn).toLocal();
+    final currentDate = DateTime.now();
+
+    if (returnDate.year == currentDate.year &&
+        returnDate.month == currentDate.month &&
+        returnDate.day == currentDate.day) {
+      return Colors.yellow;
+    }
+
+    return const Color(0xFF80FF80); 
+  } catch (e) {
+    return const Color(0xFF80FF80);
+  }
+}
+
 
 class ProfileWidget extends StatefulWidget {
   const ProfileWidget({super.key});
@@ -192,7 +210,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   void initState() {
     super.initState();
-    getUsers('mathusanmathu24@gmail.com');
+    getUsers('indunil.mypos@gmail.com');
   }
 
   @override
