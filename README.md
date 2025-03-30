@@ -1,4 +1,4 @@
-# smart_lms
+# TSD - Group 6 | smart_lms_mobile
 
 A new Flutter project.
 
