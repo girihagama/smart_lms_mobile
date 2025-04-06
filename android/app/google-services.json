@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1049211853864:android:9407823208ce9269ed291d",
+        "android_client_info": {
+          "package_name": "com.example.smart_lms"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAz6wIXK10d_5dcbiGEryftOoiWgq9Pms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1049211853864:android:1916297adb0646abed291d",
         "android_client_info": {
           "package_name": "com.smartlms.api"
