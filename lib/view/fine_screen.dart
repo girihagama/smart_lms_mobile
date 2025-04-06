@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:smart_lms/controller/apiclient.dart';
 import 'package:smart_lms/model/book_history.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +13,7 @@ class FineScreen extends StatefulWidget {
 
 class _FineScreenState extends State<FineScreen> {
   BookHistoryResult? bookHistoryResult;
+  bool isEmpty =true;
 
   @override
   void initState() {
@@ -26,6 +28,11 @@ class _FineScreenState extends State<FineScreen> {
       setState(() {
         bookHistoryResult = BookHistoryResult.fromJson(res?.data);
       });
+    }else{
+      setState(() {
+        isEmpty =true;
+      });
+      EasyLoading.showError(res?.data['message']);
     }
   }
 
@@ -38,7 +45,7 @@ class _FineScreenState extends State<FineScreen> {
         title: const Text('Fine Details', style: TextStyle(color: Colors.white)),
       ),
       body: bookHistoryResult == null
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator()) : isEmpty ? Center(child: Text('No records founded'),)
           : ListView.builder(
               itemCount: bookHistoryResult!.bookHistories?.length ?? 0,
               itemBuilder: (context, index) {

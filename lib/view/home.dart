@@ -156,35 +156,36 @@ Future<void> _logout()async {
           backgroundColor: Colors.black,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          items: const <BottomNavigationBarItem>[
+          items:  <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               backgroundColor: Colors.black,
-              icon: Icon(Icons.book,color: Colors.green,),
+              icon: Icon(Icons.book,color: _selectedIndex ==0 ?Colors.green : Colors.white,),
               label: 'Reading',
             ),
             BottomNavigationBarItem(
                           backgroundColor: Colors.black,
       
-              icon: Icon(Icons.history),
+              icon: Icon(Icons.history,color:_selectedIndex ==1 ?Colors.green : Colors.white,),
               label: 'History',
             ),
             BottomNavigationBarItem(
                           backgroundColor: Colors.black,
       
-              icon: Icon(Icons.qr_code),
+              icon: Icon(Icons.qr_code,color:_selectedIndex ==2 ?Colors.green : Colors.white,),
               label: 'Scan',
             ),
                 BottomNavigationBarItem(
                               backgroundColor: Colors.black,
       
               icon: ImageIcon(
-                AssetImage("assets/images/fine.png")
+                color:_selectedIndex ==3 ?Colors.green : Colors.white,
+                AssetImage("assets/images/fine.png" ,)
               ),
               label: 'Fine',
             ),
             BottomNavigationBarItem(
               backgroundColor: Colors.black,
-              icon: Icon(Icons.person),
+              icon: Icon(Icons.person, color:_selectedIndex ==4 ?Colors.green : Colors.white,),
               label: 'Profile',
             ),
           ],

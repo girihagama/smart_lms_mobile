@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:smart_lms/controller/apiclient.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_lms/model/book_history.dart';
@@ -12,8 +13,9 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   BookHistoryResult? bookHistoryResult;
-  int _selectedPage= 1;
-  int _limit =10;
+  int _selectedPage = 1;
+  int _limit = 10;
+  bool isEmpty = false;
 
   Future<void> getTransactionHistory() async {
     final data = {
@@ -21,12 +23,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
       "limit": _limit,
     };
 
-    final res = await ApiClient.call('transaction/history', ApiMethod.POST, data: data);
+    final res =
+        await ApiClient.call('transaction/history', ApiMethod.POST, data: data);
 
     if (res?.data != null && res?.statusCode == 200) {
       setState(() {
         bookHistoryResult = BookHistoryResult.fromJson(res?.data);
       });
+    } else {
+      setState(() {
+        isEmpty = true;
+      });
+
+      EasyLoading.showError(res?.data["message"]);
     }
   }
 
@@ -42,75 +51,82 @@ class _HistoryScreenState extends State<HistoryScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Transaction History', style: TextStyle(color: Colors.white)),
+        title: const Text('Transaction History',
+            style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
-            color: Colors.white,
-            onPressed: ()async{
-
-            // await showFormDialog(context);
-
-            }, icon: Icon(Icons.filter_2_sharp))
+              color: Colors.white,
+              onPressed: () async {
+                // await showFormDialog(context);
+              },
+              icon: Icon(Icons.filter_2_sharp))
         ],
       ),
       body: bookHistoryResult == null
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: bookHistoryResult!.bookHistories?.length ?? 0,
-              itemBuilder: (context, index) {
-                final book = bookHistoryResult!.bookHistories![index];
-                return _buildHistoryCard(book);
-              },
-            ),
+          : isEmpty
+              ? Center(
+                  child: Text("there is no records"),
+                )
+              : ListView.builder(
+                  itemCount: bookHistoryResult!.bookHistories?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final book = bookHistoryResult!.bookHistories![index];
+                    return _buildHistoryCard(book);
+                  },
+                ),
     );
   }
-  
 
-Future<void> showFormDialog(BuildContext context) async {
-  final _formKey = GlobalKey<FormState>();
+  Future<void> showFormDialog(BuildContext context) async {
+    final _formKey = GlobalKey<FormState>();
 
-  return showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Filter'),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Select Page'),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter Field 1' : null,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Enter the limit'),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter Field 2' : null,
-              ),
-            ],
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Filter'),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Select Page'),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter Field 1'
+                      : null,
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: 'Enter the limit'),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter Field 2'
+                      : null,
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                _formKey.currentState!.save();
-                Navigator.of(context).pop();
-              }
-            },
-            child: Text('Submit'),
-          ),
-        ],
-      );
-    },
-  );
-} 
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save();
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _buildHistoryCard(BookHistory book) {
     return Container(
@@ -129,7 +145,7 @@ Future<void> showFormDialog(BuildContext context) async {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  book.bookImage  ?? 'https://pngimg.com/d/book_PNG2111.png',
+                  book.bookImage ?? 'https://pngimg.com/d/book_PNG2111.png',
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
@@ -142,7 +158,8 @@ Future<void> showFormDialog(BuildContext context) async {
                   const SizedBox(width: 4),
                   Text(
                     '${book.bookRating?.toStringAsFixed(1) ?? "0.0"}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -181,7 +198,8 @@ Future<void> showFormDialog(BuildContext context) async {
                         ),
                       ),
                       TextSpan(
-                        text: '\nBORROWED: ${_formatDate(book.transactionBorrowDate)} | RETURN: ${_formatDate(book.transactionReturnDate)}',
+                        text:
+                            '\nBORROWED: ${_formatDate(book.transactionBorrowDate)} | RETURN: ${_formatDate(book.transactionReturnDate)}',
                         style: const TextStyle(
                           color: Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
@@ -208,7 +226,13 @@ Future<void> showFormDialog(BuildContext context) async {
           ),
 
           // Info Icon
-          const Icon(Icons.info, color: Colors.greenAccent),
+          GestureDetector(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                   SnackBar(content: Text('${book.bookName}:Late fee ${book.bookLateFee}')),
+                );
+              },
+              child: const Icon(Icons.info, color: Colors.greenAccent)),
         ],
       ),
     );

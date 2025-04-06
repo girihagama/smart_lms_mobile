@@ -9,6 +9,7 @@ import 'package:smart_lms/model/borrowed_book.dart';
 import 'package:smart_lms/model/common.dart';
 import 'package:smart_lms/model/user.dart';
 import 'package:smart_lms/view/login.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BorrowedBooksWidget extends StatefulWidget {
   const BorrowedBooksWidget({super.key});
@@ -19,6 +20,7 @@ class BorrowedBooksWidget extends StatefulWidget {
 
 class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
   BorrowedBookResult? borrowedBookResult;
+  bool isEmpty = false;
 
   Future<void> getBorrowedBookResult() async {
     final res = await ApiClient.call('transaction/borrowed', ApiMethod.POST);
@@ -27,7 +29,10 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
       setState(() {
         borrowedBookResult = BorrowedBookResult.fromJson(res?.data);
       });
-    }else{
+    } else {
+      setState(() {
+        isEmpty = true;
+      });
       EasyLoading.showError(res?.data['message'] ?? "Something went wrong");
     }
   }
@@ -49,13 +54,17 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
       ),
       body: borrowedBookResult == null
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: borrowedBookResult!.borrowedBooks?.length,
-              itemBuilder: (context, index) {
-                final book = borrowedBookResult!.borrowedBooks?[index];
-                return _buildBookCard(book!);
-              },
-            ),
+          : isEmpty
+              ? Center(
+                  child: Text("No Records Founded"),
+                )
+              : ListView.builder(
+                  itemCount: borrowedBookResult!.borrowedBooks?.length,
+                  itemBuilder: (context, index) {
+                    final book = borrowedBookResult!.borrowedBooks?[index];
+                    return _buildBookCard(book!);
+                  },
+                ),
     );
   }
 
@@ -314,11 +323,20 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.phone, color: Colors.white),
-                          onPressed: () {},
+                          onPressed: () async {
+                            _launchDialPad("0712408745");
+                          },
                         ),
                         IconButton(
                           icon: const Icon(Icons.email, color: Colors.white),
-                          onPressed: () {},
+                          onPressed: () async {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Contact To:hmitpg94@gmail.com')),
+                            );
+                            // _launchMail("hmitpg94@gmail.com");
+                          },
                         ),
                       ],
                     ),
@@ -363,6 +381,24 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
   String _formatDate(DateTime? date) {
     return date != null ? DateFormat('yyyy/MM/dd').format(date) : 'N/A';
+  }
+}
+
+void _launchDialPad(String phoneNumber) async {
+  final Uri dialUri = Uri(scheme: 'tel', path: phoneNumber);
+  if (await canLaunchUrl(dialUri)) {
+    await launchUrl(dialUri);
+  } else {
+    throw 'Could not launch $dialUri';
+  }
+}
+
+_launchMail(String emailAddress) async {
+  final Uri uri = Uri(scheme: 'mailto', path: emailAddress);
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri);
+  } else {
+    throw 'Could not launch $emailAddress';
   }
 }
 

@@ -2,17 +2,18 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_lms/controller/apiclient.dart';
 import 'package:smart_lms/model/common.dart';
 import 'package:smart_lms/service/notification_service.dart';
 import 'package:smart_lms/view/home.dart';
 import 'package:smart_lms/view/signup.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:smart_lms/widget/widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -84,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
     EasyLoading.show(status: 'Please wait..');
     final response = await ApiClient.call('forget/$email', ApiMethod.POST,
         authorized: false);
-        EasyLoading.dismiss();
+    EasyLoading.dismiss();
     if (response?.data != null && response?.statusCode == 200) {
       return response?.data['message'];
     } else {
@@ -101,11 +102,20 @@ class _LoginPageState extends State<LoginPage> {
       final Map<String, dynamic> configMap = jsonDecode(baseUrl);
 
       Common.baseUrl = configMap['api_base_url'];
-      ApiClient.baseURL= Common.baseUrl;
+      ApiClient.baseURL = Common.baseUrl;
 
       // print(baseUrl);
     } catch (e) {
       print(e);
+    }
+  }
+
+  void _launchDialPad(String phoneNumber) async {
+    final Uri dialUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(dialUri)) {
+      await launchUrl(dialUri);
+    } else {
+      throw 'Could not launch $dialUri';
     }
   }
 
@@ -330,7 +340,9 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          _launchDialPad("0712408745");
+                        },
                         child: Icon(
                           Icons.phone,
                           color: Colors.white,
@@ -342,7 +354,12 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Contact To:hmitpg94@gmail.com')),
+                          );
+                        },
                         child: Icon(
                           Icons.mail,
                           color: Colors.white,
