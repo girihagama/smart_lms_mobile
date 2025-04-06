@@ -1,11 +1,3 @@
-/*
- *
- * Copyright © $year  myPOS Software Solutions.  All rights reserved.
- * Author:  A.Mathusan &  TM.Sakir
- * Created At: 04/2024
- * Description:
- *
- */
 
 import 'dart:convert';
 import 'dart:io';
@@ -18,7 +10,7 @@ class ApiClient {
   static String bearerToken = '';
   static String baseURL = 
   // 'https://queue-man-api.24x7retail.com/api/';
-  'https://backend.24x7retail.com/';
+  '';
 
   static Future<Response<dynamic>?> call(
     String endpoint,
@@ -107,7 +99,7 @@ class ApiClient {
       // print(uri);
 
       if (response.statusCode == 401) {
-        await _getToken();
+        // await _getToken();
         return await call(endpoint, method,
             formData: formData,
             data: data,

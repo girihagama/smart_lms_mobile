@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:smart_lms/controller/apiclient.dart';
 import 'package:smart_lms/view/home.dart';
+import 'package:smart_lms/view/login.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -35,14 +36,14 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<bool> activateAccount(
-    { required String password,required String email, required String otp}) async {
+      {required String password,
+      required String email,
+      required String otp}) async {
     final bodyParam = {"password": password};
     try {
-      final response = await ApiClient.call('verify/$email/$otp', ApiMethod.POST,
-      data: bodyParam
-      );
-      
-  
+      final response = await ApiClient.call(
+          'verify/$email/$otp', ApiMethod.POST,
+          data: bodyParam);
 
       if (response?.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response?.data);
@@ -77,16 +78,29 @@ class _SignupPageState extends State<SignupPage> {
             children: <Widget>[
               Spacer(),
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Activate Account',
+                    'Activate',
                     style: TextStyle(color: Colors.white, fontSize: 24),
                   ),
                   SizedBox(
                     width: 10,
                   ),
-                ],
+                  Text(
+                    'Smart Library',
+                    style: TextStyle(color: Colors.green, fontSize: 24),
+                  )
+                ], 
               ),
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'Your all in-one Library Solution',
+                      style: TextStyle(color: Colors.white),
+                    )),
+                    Spacer(),
               TextFormField(
                 style: TextStyle(color: Colors.white),
                 controller: _emailController,
@@ -141,21 +155,26 @@ class _SignupPageState extends State<SignupPage> {
                   style: const TextStyle(color: Colors.red),
                 ),
               const SizedBox(height: 20),
-                         GestureDetector(
-                onTap: () async{
-                   final res =  await  activateAccount(
-                    email: _emailController.text.trim(),
-                    password: _passwordController.text.trim(),
-                    otp: _otpController.text.trim()
-                  );
-                  if(res== true){
-                   await EasyLoading.showSuccess('User Activated');  
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return HomePage();
-                    }));                 
-                  }else{
-
-                    EasyLoading.showError('Something went wrong');
+              GestureDetector(
+                onTap: () async {
+                  if (_formKey.currentState!.validate()) {
+                    if (mounted) {
+                      final res = await activateAccount(
+                          email: _emailController.text.trim(),
+                          password: _passwordController.text.trim(),
+                          otp: _otpController.text.trim());
+                      if (res == true) {
+                        await EasyLoading.showSuccess('User Activated');
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return LoginPage();
+                        }));
+                      } else {
+                        EasyLoading.showError('Something went wrong');
+                      }
+                    }
+                  } else {
+                    EasyLoading.showError('Invalid Details');
                   }
                 },
                 child: Container(
@@ -174,8 +193,9 @@ class _SignupPageState extends State<SignupPage> {
                       ])),
                 ),
               ),
-    
-              Spacer()
+              Spacer(),
+                            Spacer()
+
             ],
           ),
         ),

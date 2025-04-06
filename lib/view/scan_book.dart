@@ -13,6 +13,7 @@ class BookScanScreen extends StatefulWidget {
 
 class _BookScanScreenState extends State<BookScanScreen> {
   BookResult? bookResult;
+  bool isBookBorrowed = false;
 
   Future<void> getBookDetails({required String bookId}) async {
     final data = {"book_id": bookId};
@@ -23,7 +24,21 @@ class _BookScanScreenState extends State<BookScanScreen> {
         bookResult = BookResult.fromJson(res?.data);
       });
     } else {
-      EasyLoading.showError("Something went wrong");
+      EasyLoading.showError(res?.data['message'] ?? "Something Went wrong");
+    }
+  }
+
+  Future<void> requestBook({required String bookId}) async {
+    final data = {"book_id": bookId};
+    final res =
+        await ApiClient.call("transaction/borrow", ApiMethod.POST, data: data);
+    if (res?.data['action'] == true && res?.statusCode == 200) {
+      EasyLoading.showSuccess(res?.data["message"]);
+      setState(() {
+        isBookBorrowed = true;
+      });
+    } else {
+      EasyLoading.showError(res?.data["message"]);
     }
   }
 
@@ -80,14 +95,6 @@ class _BookScanScreenState extends State<BookScanScreen> {
     );
   }
 
-Future<void>  requestBook() async{
-// final res = await ApiClient.call('', method)
-}
-
-
-
-
-
   Widget _buildBookCard(Book book) {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -105,8 +112,7 @@ Future<void>  requestBook() async{
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  // book.bookImage ??
-                  "https://pngimg.com/d/book_PNG2111.png",
+                  book.bookImage ?? "https://backend.goldenratio.lk/uploads/book.jpg",
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
@@ -158,29 +164,36 @@ Future<void>  requestBook() async{
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 Align(
-                  alignment: Alignment.topRight,
-                  child:GestureDetector(
-                    
-                    onTap: (){
+                    alignment: Alignment.topRight,
+                    child: GestureDetector(
+                        onTap: () async {
+                          requestBook(bookId: book.bookId);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                  colors: [Colors.blue, Colors.green]),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
+                              color: Colors.white),
+                          width: 100,
+                          height: 30,
+                          child: Center(
+                              child: Text(
+                            isBookBorrowed == false
+                                ? 'Request Book'
+                                : 'Borrowed',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          )),
+                        ))
 
-                    },
-                     child:Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [Colors.blue, Colors.green]),
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                      color: Colors.white
+                    //  TextButton(
+                    //   child: Text('Request book'),
+                    //   onPressed: () {},
+                    // ),
                     ),
-                    width: 100,
-                    height: 30,
-                    child: Center(child: Text('Request Book', style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)),
-                  )
-                  )
-                  
-                  //  TextButton(
-                  //   child: Text('Request book'),
-                  //   onPressed: () {},
-                  // ),
-                ),
               ],
             ),
           ),

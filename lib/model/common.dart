@@ -1,8 +1,12 @@
 class Common {
 
-static String baseUrl = 'https://backend.24x7retail.com';
+static String baseUrl = '';
 
 static String bearerToken ='';
+
+static String email ='';
+
+static String token= '';
 
 
 

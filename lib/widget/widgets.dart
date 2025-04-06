@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_lms/controller/apiclient.dart';
 import 'package:smart_lms/model/borrowed_book.dart';
+import 'package:smart_lms/model/common.dart';
 import 'package:smart_lms/model/user.dart';
-
-
+import 'package:smart_lms/view/login.dart';
 
 class BorrowedBooksWidget extends StatefulWidget {
   const BorrowedBooksWidget({super.key});
@@ -25,6 +27,8 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
       setState(() {
         borrowedBookResult = BorrowedBookResult.fromJson(res?.data);
       });
+    }else{
+      EasyLoading.showError(res?.data['message'] ?? "Something went wrong");
     }
   }
 
@@ -40,7 +44,8 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Borrowed Books', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Borrowed Books', style: TextStyle(color: Colors.white)),
       ),
       body: borrowedBookResult == null
           ? const Center(child: CircularProgressIndicator())
@@ -71,7 +76,8 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                   book.bookImage ??'https://backend.24x7retail.com/uploads/book_image-1742146695475-746352339.jpg',
+                  book.bookImage ??
+                      'https://backend.goldenratio.lk/uploads/book.jpg',
                   width: 80,
                   height: 120,
                   fit: BoxFit.cover,
@@ -84,7 +90,8 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
                   const SizedBox(width: 4),
                   Text(
                     '${book.bookRating?.toStringAsFixed(1)}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -117,16 +124,21 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
                       ),
                       TextSpan(
                         text: book.transactionReturn,
-                        style:  TextStyle(
-                          color: _getReturnDateColor(book.transactionReturnDate.toString()) ?? Color(0xFF80FF80),
+                        style: TextStyle(
+                          color: _getReturnDateColor(
+                                  book.transactionReturnDate.toString()) ??
+                              Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
                       TextSpan(
-                        text: '\nBORROWED: ${book.transactionBorrowDate} | RETURN: ${book.transactionReturnDate}',
-                        style:  TextStyle(
-                          color:_getReturnDateColor(book.transactionReturnDate.toString()) ?? Color(0xFF80FF80),
+                        text:
+                            '\nBORROWED: ${book.transactionBorrowDate} | RETURN: ${book.transactionReturnDate}',
+                        style: TextStyle(
+                          color: _getReturnDateColor(
+                                  book.transactionReturnDate.toString()) ??
+                              Color(0xFF80FF80),
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -165,8 +177,8 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
   }
 }
 
-  Color _getReturnDateColor(String? transactionReturn) {
-  if (transactionReturn == null) return const Color(0xFF80FF80); 
+Color _getReturnDateColor(String? transactionReturn) {
+  if (transactionReturn == null) return const Color(0xFF80FF80);
 
   try {
     final returnDate = DateTime.parse(transactionReturn).toLocal();
@@ -178,12 +190,11 @@ class _BorrowedBooksWidgetState extends State<BorrowedBooksWidget> {
       return Colors.yellow;
     }
 
-    return const Color(0xFF80FF80); 
+    return const Color(0xFF80FF80);
   } catch (e) {
     return const Color(0xFF80FF80);
   }
 }
-
 
 class ProfileWidget extends StatefulWidget {
   const ProfileWidget({super.key});
@@ -200,7 +211,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
     final res = await ApiClient.call('user/info', ApiMethod.POST, data: data);
 
-    if (res?.data != null && res?.statusCode == 200 && res?.data['action'] == true) {
+    if (res?.data != null &&
+        res?.statusCode == 200 &&
+        res?.data['action'] == true) {
       setState(() {
         userResult = UserResult.fromJson(res?.data);
       });
@@ -210,7 +223,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   void initState() {
     super.initState();
-    getUsers('indunil.mypos@gmail.com');
+    getUsers(Common.email);
   }
 
   @override
@@ -226,8 +239,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              
+            onPressed: () async {
+              final pref = await SharedPreferences.getInstance();
+              await pref.clear();
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return LoginPage();
+              }));
             },
           ),
         ],
@@ -264,11 +281,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoField('Name:', userResult?.user?.uM_NAME ?? 'N/A'),
-                    _buildInfoField('DOB:', _formatDate(userResult?.user?.uM_DOB)),
-                    _buildInfoField('Address:', userResult?.user?.uM_ADDRESS ?? 'N/A'),
-                    _buildInfoField('Contact:', userResult?.user?.uM_MOBILE ?? 'N/A'),
-                    _buildInfoField('Email:', userResult?.user?.uM_CODE ?? 'N/A'),
+                    _buildInfoField(
+                        'Name:', userResult?.user?.uM_NAME ?? 'N/A'),
+                    _buildInfoField(
+                        'DOB:', _formatDate(userResult?.user?.uM_DOB)),
+                    _buildInfoField(
+                        'Address:', userResult?.user?.uM_ADDRESS ?? 'N/A'),
+                    _buildInfoField(
+                        'Contact:', userResult?.user?.uM_MOBILE ?? 'N/A'),
+                    _buildInfoField(
+                        'Email:', userResult?.user?.uM_CODE ?? 'N/A'),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -344,68 +366,132 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 }
 
+// class FinePaymentCard extends StatelessWidget {
+//   const FinePaymentCard({super.key});
 
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(16.0),
+//       margin: const EdgeInsets.symmetric(vertical: 16.0),
+//       decoration: BoxDecoration(
+//         color: Colors.black,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           const Divider(color: Colors.white, thickness: 1.0),
+//           const SizedBox(height: 12),
 
+//           // Fee Per Day
+//           _buildInfoRow('Fee Per Day :', 'Rs.450.00', isBold: true),
 
-class FinePaymentCard extends StatelessWidget {
-  const FinePaymentCard({super.key});
+//           const SizedBox(height: 8),
+
+//           // Days Late
+//           _buildInfoRow('Days Late To Return :', '2', isBold: true),
+
+//           const SizedBox(height: 12),
+
+//           // Total Payment
+//           _buildInfoRow(
+//             'TOTAL PAYMENT TO RETURN :',
+//             'Rs.900.00',
+//             isBold: true,
+//             color: Colors.red,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildInfoRow(String label, String value,
+//       {bool isBold = false, Color? color}) {
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//       children: [
+//         Text(
+//           label,
+//           style: TextStyle(
+//             color: Colors.white,
+//             fontWeight: FontWeight.w500,
+//           ),
+//         ),
+//         Text(
+//           value,
+//           style: TextStyle(
+//             color: color ?? Colors.white,
+//             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
+// ignore_for_file: unnecessary_null_comparison
+
+class Alert extends StatefulWidget {
+  final List<Widget>? actions;
+  final String title;
+  final Widget? content;
+  final bool notificaiton;
+
+  const Alert(
+      {Key? key,
+      this.actions,
+      required this.title,
+      this.content,
+      this.notificaiton = false})
+      : super(key: key);
 
   @override
+  State<StatefulWidget> createState() => _AlertState();
+}
+
+class _AlertState extends State<Alert> {
+  @override
   Widget build(BuildContext context) {
+    final _text = widget.title == null ? "" : widget.title;
+    Widget title = widget.notificaiton
+        ? Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  _text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Color(0xFF1c1c1a),
+                      fontWeight: FontWeight.bold,
+                      fontSize: MediaQuery.of(context).size.width * 0.055,
+                      fontFamily: "Centuary Gothic"),
+                ),
+              ),
+              Icon(
+                Icons.notifications_active,
+                color: Color(0xFF1c1c1a),
+              )
+            ],
+          )
+        : Text(
+            _text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Color(0xFF1c1c1a),
+                fontWeight: FontWeight.bold,
+                fontSize: MediaQuery.of(context).size.width * 0.055,
+                fontFamily: "Centuary Gothic"),
+          );
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
-      margin: const EdgeInsets.symmetric(vertical: 16.0),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Divider(color: Colors.white, thickness: 1.0),
-          const SizedBox(height: 12),
-
-          // Fee Per Day
-          _buildInfoRow('Fee Per Day :', 'Rs.450.00', isBold: true),
-
-          const SizedBox(height: 8),
-
-          // Days Late
-          _buildInfoRow('Days Late To Return :', '2', isBold: true),
-
-          const SizedBox(height: 12),
-
-          // Total Payment
-          _buildInfoRow(
-            'TOTAL PAYMENT TO RETURN :',
-            'Rs.900.00',
-            isBold: true,
-            color: Colors.red,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, {bool isBold = false, Color? color}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            color: color ?? Colors.white,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ],
+      child: AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 10,
+          backgroundColor: Color(0xFFC6C6C4),
+          title: title,
+          content: widget.content,
+          actions: widget.actions),
     );
   }
 }

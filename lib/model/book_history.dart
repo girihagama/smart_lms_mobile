@@ -43,7 +43,7 @@ class BookHistory {
   final int? transactionLateFee;
   final int? transactionLateDays;
   final int? transactionLatePayments;
-  final int? transactionLatePaid;
+  final String? transactionLatePaid;
   final int? transactionRating;
   final String? bookId;
   final String? bookName;
